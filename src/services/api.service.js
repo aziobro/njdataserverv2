@@ -4,8 +4,10 @@ const { SchoolDetails } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 
-const listCounties = async (req,res) =>{
+const listCounties = async (filter) =>{
+    console.log(filter);
     const pipeline = ([
+        {'$match':filter},
         {'$project':{ 
                 'CountyCode':1,
                 'CountyName':1
@@ -23,6 +25,7 @@ const listCounties = async (req,res) =>{
             "value" : "$_id.value",
             "label" : "$_id.label"
         }}])
+    console.log(JSON.stringify(pipeline));    
     const testdata = await SchoolDetails.aggregate(pipeline);
     return testdata;           
 
