@@ -6,7 +6,7 @@ const apiController = require('../../controllers/api.controller');
 const router = express.Router();
 
 router
-  .route('/api/listcounties/')
+  .route('/listcounties/')
   .get(apiController.listCounties)
 
 
