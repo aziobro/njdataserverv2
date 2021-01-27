@@ -94,6 +94,7 @@ const listScores = async(filter)=>{
         "text":{"$push":"$text"}
         }}
     ])
+    console.log(pipeline);
     const schooldata = await SchoolDetails.aggregate(pipeline);
     return schooldata;
 
