@@ -16,9 +16,17 @@ const listSchools = catchAsync(async(req,res)=>{
   const filter = pick(req.query,['CountyCode','DistrictCode']);
   const result = await apiService.listSchools(filter);
   res.send(result);
+});
+
+const listScores = catchAsync(async(req,res)=>{
+  const filter = pick(req.query,['CountyCode','DistrictCode']);
+  const result = await apiService.listScores(filter);
+  res.send(result);
 })
+
 
 module.exports = {
   listCounties,
   listSchools,
+  listScores,
 }

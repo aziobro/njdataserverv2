@@ -58,12 +58,51 @@ const listSchools = async (filter) =>{
     const schooldata = await SchoolDetails.aggregate(pipeline);
     return schooldata;           
 
-}
+};
 
+const listScores = async(filter)=>{
+    const pipeline = ([
+        {"$match":filter},
+        {"$match": {'scores.k' : {"$in" : ["ACT.English", "ACT.Math",
+        "ACT.Reading", "ACT.Science",
+        "PSAT", "PSAT.Math",
+        "PSAT.Reading and Writing", "SAT.Math",
+        "SAT.Reading and Writing"]}
+        }},
+        {'$project': {
+        '_id':0,
+        'CDS':1,
+        'CountyName':1,
+        'DistrictSchoolNameShort':1,
+        'DistrictName':1,
+        'SchoolName':1,
+        'scores': 1
+        }  
+        }
+        ,
+        {'$unwind' : "$scores"},
+        {'$project': {
+        'x': '$CDS',
+        'text': {"$concat":['$DistrictName',' / ','$SchoolName']},
+        'y' : "$scores.v",
+        'score-year' : {"$concat":["$scores.k"," / ","$scores.y"]}
+        }},
+        {"$group":{
+        "_id":"$score-year",
+        "x":{"$push":"$x"},
+        "y":{"$push":"$y"},
+        "text":{"$push":"$text"}
+        }}
+    ])
+    const schooldata = await SchoolDetails.aggregate(pipeline);
+    return schooldata;
+
+}
 
 
 
 module.exports ={
     listCounties,
     listSchools,
+    listScores,
 };

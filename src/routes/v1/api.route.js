@@ -11,6 +11,9 @@ router
 router
   .route('/listschools/')
   .get(apiController.listSchools)
+router
+  .route('/listscores/')
+  .get(apiController.listScores)
 
 
 module.exports = router;
