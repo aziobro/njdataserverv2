@@ -6,12 +6,19 @@ const { apiService } = require('../services');
 
 const listCounties = catchAsync(async (req, res) => {
   console.log(req.query);
-  const filter = pick(req.query,['CountyCode'])
+  const filter = pick(req.query,['CountyCode']);
   console.log(filter);
   const result = await apiService.listCounties(filter);
   res.send(result);
 });
 
+const listSchools = catchAsync(async(req,res)=>{
+  const filter = pick(req.query,['CountyCode','DistrictCode']);
+  const result = await apiService.listSchools(filter);
+  res.send(result);
+})
+
 module.exports = {
   listCounties,
+  listSchools,
 }
