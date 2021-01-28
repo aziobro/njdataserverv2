@@ -7,7 +7,7 @@ const router = express.Router();
 
 router
   .route('/listcounties/')
-  .get(apiController.listCounties)
+  .post(apiController.listCounties)
 router
   .route('/listschools/')
   .get(apiController.listSchools)

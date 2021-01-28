@@ -5,8 +5,8 @@ const catchAsync = require('../utils/catchAsync');
 const { apiService } = require('../services');
 
 const listCounties = catchAsync(async (req, res) => {
-  console.log(req.query);
-  const filter = pick(req.query,['CountyCode']);
+  console.log(req);
+  const filter = pick(req.body,['CountyCode']);
   console.log(filter);
   const result = await apiService.listCounties(filter);
   res.send(result);
