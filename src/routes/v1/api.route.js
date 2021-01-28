@@ -10,7 +10,7 @@ router
   .post(apiController.listCounties)
 router
   .route('/listschools/')
-  .get(apiController.listSchools)
+  .post(apiController.listSchools)
 router
   .route('/listscores/')
   .get(apiController.listScores)
