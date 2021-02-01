@@ -8,6 +8,7 @@ const listCounties = async (filter) =>{
     console.log(filter);
     const pipeline = ([
         {'$match':filter},
+        {'$match':{"CountyName":{"$ne":null}}},
         {'$project':{ 
                 'CountyCode':1,
                 'CountyName':1
