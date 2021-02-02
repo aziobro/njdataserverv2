@@ -37,7 +37,7 @@ const listSchools = async (filter) =>{
     const pipeline = ([
         {'$match':filter},
         {'$project':{
-                'id':"$_id", 
+                'id':"$CDS", 
                 'CDS':1,
                 'CountyName':1,
                 'DistrictName':1,

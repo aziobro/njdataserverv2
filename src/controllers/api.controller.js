@@ -14,7 +14,7 @@ const listCounties = catchAsync(async (req, res) => {
 
 const listSchools = catchAsync(async(req,res)=>{
   console.log(req);
-  const filter = pick(req.body,['CountyCode','DistrictCode']);
+  const filter = pick(req.body,['CountyCode','DistrictCode','CDS','_id']);
   const result = await apiService.listSchools(filter);
   res.send(result);
 });
