@@ -40,6 +40,10 @@ const userSchema = mongoose.Schema(
       enum: roles,
       default: 'user',
     },
+    mylists: {
+      type: Array,
+      default: [],
+    }
   },
   {
     timestamps: true,
