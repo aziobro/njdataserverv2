@@ -5,15 +5,8 @@ const apiController = require('../../controllers/api.controller');
 
 const router = express.Router();
 
-router
-  .route('/listcounties/')
-  .post(apiController.listCounties)
-router
-  .route('/listschools/')
-  .post(apiController.listSchools)
-router
-  .route('/listscores/')
-  .get(apiController.listScores)
-
+router.route('/listcounties/').post(apiController.listCounties);
+router.route('/listschools/').post(apiController.listSchools);
+router.route('/listscores/').post(apiController.listScores);
 
 module.exports = router;
