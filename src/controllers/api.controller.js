@@ -21,7 +21,7 @@ const listSchools = catchAsync(async (req, res) => {
 
 const listScores = catchAsync(async (req, res) => {
   console.log(req);
-  const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS', 'scores.k']);
+  const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS', 'scores']);
   console.log(filter);
   const result = await apiService.listScores(filter);
   res.send(result);

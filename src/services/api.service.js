@@ -55,23 +55,6 @@ const listScores = async (filter) => {
   const pipeline = [
     { $match: filter },
     {
-      $match: {
-        'scores.k': {
-          $in: [
-            'ACT.English',
-            'ACT.Math',
-            'ACT.Reading',
-            'ACT.Science',
-            'PSAT',
-            'PSAT.Math',
-            'PSAT.Reading and Writing',
-            'SAT.Math',
-            'SAT.Reading and Writing',
-          ],
-        },
-      },
-    },
-    {
       $project: {
         _id: 0,
         CDS: 1,
@@ -83,6 +66,12 @@ const listScores = async (filter) => {
       },
     },
     { $unwind: '$scores' },
+    { $match: {
+        "scores.k": { $in: [
+            'SAT.Math',
+            ]} 
+    }}, 
+
     {
       $project: {
         x: '$CDS',
