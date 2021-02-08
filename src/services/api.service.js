@@ -66,11 +66,11 @@ const listScores = async (filter) => {
       },
     },
     { $unwind: '$scores' },
-    { $match: {
-        "scores.k": { $in: [
-            'SAT.Math',
-            ]} 
-    }}, 
+    {
+      $match: {
+        'scores.k': { $in: ['SAT.Math'] },
+      },
+    },
 
     {
       $project: {
@@ -80,6 +80,10 @@ const listScores = async (filter) => {
         'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
       },
     },
+    {
+      $sort: { y: 1, 'score-year': 1 },
+    },
+
     {
       $group: {
         _id: '$score-year',
