@@ -51,7 +51,7 @@ const listSchools = async (filter) => {
   return schooldata;
 };
 
-const listScores = async (filter) => {
+const listScores = async (filter,filter2) => {
   const pipeline = [
     { $match: filter },
     {
@@ -68,7 +68,7 @@ const listScores = async (filter) => {
     { $unwind: '$scores' },
     {
       $match: {
-        'scores.k': { $in: ['SAT.Math'] },
+        'scores.k': { $in: filter2.scores },
       },
     },
 
