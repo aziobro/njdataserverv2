@@ -62,15 +62,63 @@ const listScores = async (filter, filter2) => {
         DistrictSchoolNameShort: 1,
         DistrictName: 1,
         SchoolName: 1,
-        scores: 1,
+        scores: {
+          $filter: {
+            input: '$scores',
+            as: 'score',
+            cond: { $in: ['$$score.k', filter2.scores] },
+          },
+        },
       },
     },
+    { $addFields: { avgScore: { $avg: '$scores.v' } } },
+    { $match: { avgScore: { $ne: null } } },
+    { $sort: { avgScore: 1 } },
     { $unwind: '$scores' },
     {
-      $match: {
-        'scores.k': { $in: filter2.scores },
+      $project: {
+        x: '$CDS',
+        text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
+        y: '$scores.v',
+        // 'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
+        year: '$scores.y',
+        avgScore: 1,
+        DistrictName: 1,
+        SchoolName: 1,
       },
     },
+    {
+      $group: {
+        _id: '$year',
+        x: { $push: '$x' },
+        y: { $push: '$y' },
+        text: { $push: '$text' },
+        avgScore: { $push: '$avgScore' },
+        DistrictName: { $push: '$DistrictName' },
+        SchoolName: { $push: '$SchoolName' },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+
+    // {
+    //   $project: {
+    //     _id: 0,
+    //     CDS: 1,
+    //     CountyName: 1,
+    //     DistrictSchoolNameShort: 1,
+    //     DistrictName: 1,
+    //     SchoolName: 1,
+    //     scores: 1,
+    //   },
+    // },
+    // { $unwind: '$scores' },
+    // {
+    //   $match: {
+    //     'scores.k': { $in: filter2.scores },
+    //   },
+    // },
 
     // ***************GOT CLOSE WITH THIS SOLUTION COMMENTED OUT FOR THE AVERAGE - PROBLEM WAS THERE WERE MULTI SCORES FOR ONE YEAR.  HAS TO DO WITH THE UNWIND STATEMENTS
     // {
@@ -100,23 +148,27 @@ const listScores = async (filter, filter2) => {
     //   },
     // },
 
-    {
-      $project: {
-        x: '$CDS',
-        text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
-        y: '$scores.v',
-        'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
-      },
-    },
-    {
-      $group: {
-        _id: '$score-year',
-        x: { $push: '$x' },
-        y: { $push: '$y' },
-        text: { $push: '$text' },
-        //avgScore: { $addToSet: { $avg: '$y' } },
-      },
-    },
+    // {
+    //   $project: {
+    //     x: '$CDS',
+    //     text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
+    //     y: '$scores.v',
+    //     'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
+    //     avgScore: '$avgScore',
+    //   },
+    // },
+    // // {
+    // //   $sort: { y: 1, 'score-year': 1 },
+    // // },
+    // {
+    //   $group: {
+    //     _id: '$score-year',
+    //     x: { $push: '$x' },
+    //     y: { $push: '$y' },
+    //     text: { $push: '$text' },
+    //     //avgScore: { $addToSet: { $avg: '$y' } },
+    //   },
+    // },
   ];
   console.log(JSON.stringify(pipeline));
   const schoolscores = await SchoolDetails.aggregate(pipeline);
