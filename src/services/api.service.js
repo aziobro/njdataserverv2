@@ -106,12 +106,8 @@ const listScores = async (filter, filter2) => {
         text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
         y: '$scores.v',
         'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
-        avgScore: '$avgScore',
       },
     },
-    // {
-    //   $sort: { y: 1, 'score-year': 1 },
-    // },
     {
       $group: {
         _id: '$score-year',
