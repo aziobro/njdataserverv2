@@ -51,7 +51,7 @@ const listSchools = async (filter) => {
   return schooldata;
 };
 
-const listScores = async (filter,filter2) => {
+const listScores = async (filter, filter2) => {
   const pipeline = [
     { $match: filter },
     {
@@ -72,24 +72,53 @@ const listScores = async (filter,filter2) => {
       },
     },
 
+    // ***************GOT CLOSE WITH THIS SOLUTION COMMENTED OUT FOR THE AVERAGE - PROBLEM WAS THERE WERE MULTI SCORES FOR ONE YEAR.  HAS TO DO WITH THE UNWIND STATEMENTS
+    // {
+    //   $group: {
+    //     _id: '$CDS',
+    //     avgScore: { $avg: '$scores.v' },
+    //     'score-year': { $push: { $concat: ['$scores.k', ' / ', '$scores.y'] } },
+    //     x: { $first: '$CDS' },
+    //     y: { $push: '$scores.v' },
+    //     text: { $first: { $concat: ['$DistrictName', ' / ', '$SchoolName'] } },
+    //   },
+    // },
+
+    // {
+    //   $unwind: '$score-year',
+    // },
+    // {
+    //   $unwind: '$y',
+    // },
+    // {
+    //   $project: {
+    //     avgScore: 1,
+    //     x: 1,
+    //     y: 1,
+    //     text: 1,
+    //     'score-year': 1,
+    //   },
+    // },
+
     {
       $project: {
         x: '$CDS',
         text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
         y: '$scores.v',
         'score-year': { $concat: ['$scores.k', ' / ', '$scores.y'] },
+        avgScore: '$avgScore',
       },
     },
-    {
-      $sort: { y: 1, 'score-year': 1 },
-    },
-
+    // {
+    //   $sort: { y: 1, 'score-year': 1 },
+    // },
     {
       $group: {
         _id: '$score-year',
         x: { $push: '$x' },
         y: { $push: '$y' },
         text: { $push: '$text' },
+        //avgScore: { $addToSet: { $avg: '$y' } },
       },
     },
   ];
