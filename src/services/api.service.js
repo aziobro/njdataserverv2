@@ -86,8 +86,8 @@ const listScores = async (filter, filter2) => {
         $reduce : {
             input: "$scores",
             initialValue : "",
-            in: {$concat:["$$value","<br>","$$this.y"," ",
-            {$toString:"$$this.v"}] }
+            in: {$concat:["$$value","$$this.y",": ",
+            {$toString:"$$this.v"},"<br>"] }
         }
     }}},
     { $match: {avgScore:{$ne:null}}},
@@ -114,7 +114,7 @@ const listScores = async (filter, filter2) => {
         y: { $push: '$y' },
         text: { $push: '$text' },
         avgScore : {$push: '$avgScore'},
-        scoreText : {$push: {$concat:["$DistrictName","<br>","$SchoolName","<br>",'$scoreText']}},
+        scoreText : {$push: {$concat:["<b>","$DistrictName","<br>","$SchoolName","<br><br>Year: Mean Score</b><br>",'$scoreText']}},
         DistrictName : {$push : '$DistrictName'},
         SchoolName : {$push: '$SchoolName'}
 
