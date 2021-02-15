@@ -43,6 +43,10 @@ const userSchema = mongoose.Schema(
     mylists: {
       type: Array,
       default: [],
+    },
+    activelist : {
+      type: String,
+      default : '',
     }
   },
   {

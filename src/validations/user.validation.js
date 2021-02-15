@@ -36,6 +36,7 @@ const updateUser = {
       password: Joi.string().custom(password),
       name: Joi.string(),
       mylists: Joi.array(),
+      activelist : Joi.string(),
     })
     .min(1),
 };
