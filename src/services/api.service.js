@@ -264,6 +264,71 @@ const listScores = async (filter, filter2) => {
   return schoolscores;
 };
 
+const listNjslaScores = async (filter, filter2) => {
+  const pipeline = [
+    { $match: filter },
+    {
+      $project: {
+        _id: 0,
+        CDS: 1,
+        CountyName: 1,
+        DistrictSchoolNameShort: 1,
+        DistrictName: 1,
+        SchoolName: 1,
+        scores: {
+          $filter: {
+            input: '$scores',
+            as: 'score',
+            cond: { $in: ['$$score.k', filter2.scores] },
+          },
+        },
+      },
+    },
+    { $match: { scores: { $gt: [] } } },
+
+    {
+      $addFields: {
+        L4L5: {
+          $map: {
+            input: '$scores',
+            as: 'levelScores',
+            in: {
+              $mergeObjects: [
+                { year: '$$levelScores.y' },
+                {
+                  sum: { $sum: ['$$levelScores.sd.L4Percent', '$$levelScores.sd.L5Percent'] },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        L1L2: {
+          $map: {
+            input: '$scores',
+            as: 'levelScores',
+            in: {
+              $mergeObjects: [
+                { year: '$$levelScores.y' },
+                {
+                  sum: { $sum: ['$$levelScores.sd.L1Percent', '$$levelScores.sd.L2Percent'] },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  ];
+  console.log(JSON.stringify(pipeline));
+  const schoolscores = await SchoolDetails.aggregate(pipeline);
+  return schoolscores;
+};
+
 module.exports = {
   listCounties,
   listSchools,
