@@ -22,9 +22,18 @@ const listSchools = catchAsync(async (req, res) => {
 const listScores = catchAsync(async (req, res) => {
   console.log(req);
   const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS']);
-  const filter2 = pick(req.body,['scores']);
+  const filter2 = pick(req.body, ['scores']);
   console.log(filter);
-  const result = await apiService.listScores(filter,filter2);
+  const result = await apiService.listScores(filter, filter2);
+  res.send(result);
+});
+
+const listNjslaScores = catchAsync(async (req, res) => {
+  console.log(req);
+  const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS']);
+  const filter2 = pick(req.body, ['scores']);
+  console.log(filter);
+  const result = await apiService.listNjslaScores(filter, filter2);
   res.send(result);
 });
 
@@ -32,4 +41,5 @@ module.exports = {
   listCounties,
   listSchools,
   listScores,
+  listNjslaScores,
 };

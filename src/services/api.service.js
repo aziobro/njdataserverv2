@@ -285,42 +285,26 @@ const listNjslaScores = async (filter, filter2) => {
       },
     },
     { $match: { scores: { $gt: [] } } },
-
+    { $unwind: '$scores' },
     {
-      $addFields: {
-        L4L5: {
-          $map: {
-            input: '$scores',
-            as: 'levelScores',
-            in: {
-              $mergeObjects: [
-                { year: '$$levelScores.y' },
-                {
-                  sum: { $sum: ['$$levelScores.sd.L4Percent', '$$levelScores.sd.L5Percent'] },
-                },
-              ],
-            },
-          },
-        },
+      $project: {
+        x: '$CDS',
+        L4L5: { $round: [{ $sum: ['$scores.sd.L4Percent', '$scores.sd.L5Percent'] }, 1] },
+        L1L52: { $round: [{ $sum: ['$scores.sd.L1Percent', '$scores.sd.L2Percent'] }, 1] },
+        'score-year': '$scores.y',
+        test: '$scores.k',
+        DistrictName: 1,
+        SchoolName: 1,
       },
     },
-
     {
-      $addFields: {
-        L1L2: {
-          $map: {
-            input: '$scores',
-            as: 'levelScores',
-            in: {
-              $mergeObjects: [
-                { year: '$$levelScores.y' },
-                {
-                  sum: { $sum: ['$$levelScores.sd.L1Percent', '$$levelScores.sd.L2Percent'] },
-                },
-              ],
-            },
-          },
-        },
+      $group: {
+        _id: { year: '$score-year', test: '$test' },
+        x: { $push: '$x' },
+        L4L5: { $push: '$L4L5' },
+        L1L2: { $push: '$L1L2' },
+        DistrictName: { $push: '$DistrictName' },
+        SchoolName: { $push: '$SchoolName' },
       },
     },
   ];
@@ -333,4 +317,5 @@ module.exports = {
   listCounties,
   listSchools,
   listScores,
+  listNjslaScores,
 };
