@@ -348,6 +348,11 @@ const listNjslaScores = async (filter, filter2) => {
         'score-year': '$scores.y',
         avgL4L5: '$avgL4L5Sum',
         avgL1L2: '$avgL1L2Sum',
+        Level1: '$scores.sd.L1Percent',
+        Level2: '$scores.sd.L2Percent',
+        Level3: '$scores.sd.L3Percent',
+        Level4: '$scores.sd.L4Percent',
+        Level5: '$scores.sd.L5Percent',
         test: '$scores.k',
         scoreText: 1,
         scoreText12: 1,
@@ -374,6 +379,145 @@ const listNjslaScores = async (filter, filter2) => {
             $concat: ['<b>', '$DistrictName', '<br>', '$SchoolName', '<br><br>Year: Mean Score</b><br>', '$scoreText12'],
           },
         },
+        Level1: { $push: '$Level1' },
+        Level2: { $push: '$Level2' },
+        Level3: { $push: '$Level3' },
+        Level4: { $push: '$Level4' },
+        Level5: { $push: '$Level5' },
+        DistrictName: { $push: '$DistrictName' },
+        SchoolName: { $push: '$SchoolName' },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ];
+  console.log(JSON.stringify(pipeline));
+  const schoolscores = await SchoolDetails.aggregate(pipeline);
+  return schoolscores;
+};
+
+const listNjslaScoresAll = async (filter, filter2) => {
+  const pipeline = [
+    { $match: filter },
+    {
+      $project: {
+        _id: 0,
+        CDS: 1,
+        CountyName: 1,
+        DistrictSchoolNameShort: 1,
+        DistrictName: 1,
+        SchoolName: 1,
+        scores: {
+          $filter: {
+            input: '$scores',
+            as: 'score',
+            cond: { $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+          },
+        },
+      },
+    },
+    { $match: { scores: { $gt: [] } } },
+    {
+      $set: {
+        scores: {
+          $map: {
+            input: '$scores',
+            as: 'scores',
+            in: {
+              $mergeObjects: [
+                '$$scores',
+                { L4L5Sum: { $round: [{ $sum: ['$$scores.sd.L4Percent', '$$scores.sd.L5Percent'] }, 1] } },
+                { L1L2Sum: { $round: [{ $sum: ['$$scores.sd.L1Percent', '$$scores.sd.L2Percent'] }, 1] } },
+              ],
+            },
+          },
+        },
+      },
+    },
+    // { $addFields: { avgL4L5Sum: { $round: [ { $avg: '$scores.L4L5Sum' }, 1] } } },
+    // { $addFields: { avgL1L2Sum: { $round: [ { $avg: '$scores.L1L2Sum' }, 1] } } },
+    {
+      $set: {
+        scores: {
+          $function: {
+            body: ' function(scores){scores.sort((a,b) => a.y > b.y);return scores;}',
+            args: ['$scores'],
+            lang: 'js',
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        scoreText: {
+          $reduce: {
+            input: '$scores',
+            initialValue: '',
+            in: { $concat: ['$$value', '$$this.y', ': ', { $toString: '$$this.L4L5Sum' }, '<br>'] },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        scoreText12: {
+          $reduce: {
+            input: '$scores',
+            initialValue: '',
+            in: { $concat: ['$$value', '$$this.y', ': ', { $toString: '$$this.L1L2Sum' }, '<br>'] },
+          },
+        },
+      },
+    },
+    // { $sort: { avgL4L5Sum: 1 } },
+    { $unwind: '$scores' },
+    {
+      $project: {
+        CDS: '$CDS',
+        'cds-year': { $concat: ['$CDS', '.', '$scores.k', '.', '$scores.y'] },
+        L4L5: '$scores.L4L5Sum',
+        L1L2: '$scores.L1L2Sum',
+        text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
+        'score-year': '$scores.y',
+        avgL4L5: '$avgL4L5Sum',
+        avgL1L2: '$avgL1L2Sum',
+        Level1: '$scores.sd.L1Percent',
+        Level2: '$scores.sd.L2Percent',
+        Level3: '$scores.sd.L3Percent',
+        Level4: '$scores.sd.L4Percent',
+        Level5: '$scores.sd.L5Percent',
+        test: '$scores.k',
+        scoreText: 1,
+        scoreText12: 1,
+        DistrictName: 1,
+        SchoolName: 1,
+      },
+    },
+    {
+      $group: {
+        _id: { test: '$test' },
+        CDS: { $push: '$CDS' },
+        'cds-year': { $push: '$cds-year' },
+        L4L5: { $push: '$L4L5' },
+        L1L2: { $push: '$L1L2' },
+        text: { $push: '$text' },
+        avgL4L5: { $push: '$avgL4L5' },
+        avgL1L2: { $push: '$avgL1L2' },
+        test: { $push: '$test' },
+        scoreText: {
+          $push: {
+            $concat: ['<b>', '$DistrictName', '<br>', '$SchoolName', '<br><br>Year: Mean Score</b><br>', '$scoreText'],
+          },
+        },
+        scoreText12: {
+          $push: {
+            $concat: ['<b>', '$DistrictName', '<br>', '$SchoolName', '<br><br>Year: Mean Score</b><br>', '$scoreText12'],
+          },
+        },
+        Level1: { $push: '$Level1' },
+        Level2: { $push: '$Level2' },
+        Level3: { $push: '$Level3' },
+        Level4: { $push: '$Level4' },
+        Level5: { $push: '$Level5' },
         DistrictName: { $push: '$DistrictName' },
         SchoolName: { $push: '$SchoolName' },
       },
@@ -390,4 +534,5 @@ module.exports = {
   listSchools,
   listScores,
   listNjslaScores,
+  listNjslaScoresAll,
 };

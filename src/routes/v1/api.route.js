@@ -9,5 +9,6 @@ router.route('/listcounties/').post(apiController.listCounties);
 router.route('/listschools/').post(apiController.listSchools);
 router.route('/listscores/').post(apiController.listScores);
 router.route('/listnjslascores/').post(apiController.listNjslaScores);
+router.route('/listnjslascoresall/').post(apiController.listNjslaScoresAll);
 
 module.exports = router;
