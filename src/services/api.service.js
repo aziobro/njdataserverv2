@@ -285,14 +285,72 @@ const listNjslaScores = async (filter, filter2) => {
       },
     },
     { $match: { scores: { $gt: [] } } },
+    {
+      $set: {
+        scores: {
+          $map: {
+            input: '$scores',
+            as: 'scores',
+            in: {
+              $mergeObjects: [
+                '$$scores',
+                { L4L5Sum: { $round: [{ $sum: ['$$scores.sd.L4Percent', '$$scores.sd.L5Percent'] }, 1] } },
+                { L1L2Sum: { $round: [{ $sum: ['$$scores.sd.L1Percent', '$$scores.sd.L2Percent'] }, 1] } },
+              ],
+            },
+          },
+        },
+      },
+    },
+    { $addFields: { avgL4L5Sum: { $round: [{ $avg: '$scores.L4L5Sum' }, 1] } } },
+    { $addFields: { avgL1L2Sum: { $round: [{ $avg: '$scores.L1L2Sum' }, 1] } } },
+    {
+      $set: {
+        scores: {
+          $function: {
+            body: ' function(scores){scores.sort((a,b) => a.y > b.y);return scores;}',
+            args: ['$scores'],
+            lang: 'js',
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        scoreText: {
+          $reduce: {
+            input: '$scores',
+            initialValue: '',
+            in: { $concat: ['$$value', '$$this.y', ': ', { $toString: '$$this.L4L5Sum' }, '<br>'] },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        scoreText12: {
+          $reduce: {
+            input: '$scores',
+            initialValue: '',
+            in: { $concat: ['$$value', '$$this.y', ': ', { $toString: '$$this.L1L2Sum' }, '<br>'] },
+          },
+        },
+      },
+    },
+    { $sort: { avgL4L5Sum: 1 } },
     { $unwind: '$scores' },
     {
       $project: {
         x: '$CDS',
-        L4L5: { $round: [{ $sum: ['$scores.sd.L4Percent', '$scores.sd.L5Percent'] }, 1] },
-        L1L52: { $round: [{ $sum: ['$scores.sd.L1Percent', '$scores.sd.L2Percent'] }, 1] },
+        L4L5: '$scores.L4L5Sum',
+        L1L2: '$scores.L1L2Sum',
+        text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
         'score-year': '$scores.y',
+        avgL4L5: '$avgL4L5Sum',
+        avgL1L2: '$avgL1L2Sum',
         test: '$scores.k',
+        scoreText: 1,
+        scoreText12: 1,
         DistrictName: 1,
         SchoolName: 1,
       },
@@ -303,10 +361,24 @@ const listNjslaScores = async (filter, filter2) => {
         x: { $push: '$x' },
         L4L5: { $push: '$L4L5' },
         L1L2: { $push: '$L1L2' },
+        text: { $push: '$text' },
+        avgL4L5: { $push: '$avgL4L5' },
+        avgL1L2: { $push: '$avgL1L2' },
+        scoreText: {
+          $push: {
+            $concat: ['<b>', '$DistrictName', '<br>', '$SchoolName', '<br><br>Year: Mean Score</b><br>', '$scoreText'],
+          },
+        },
+        scoreText12: {
+          $push: {
+            $concat: ['<b>', '$DistrictName', '<br>', '$SchoolName', '<br><br>Year: Mean Score</b><br>', '$scoreText12'],
+          },
+        },
         DistrictName: { $push: '$DistrictName' },
         SchoolName: { $push: '$SchoolName' },
       },
     },
+    { $sort: { _id: 1 } },
   ];
   console.log(JSON.stringify(pipeline));
   const schoolscores = await SchoolDetails.aggregate(pipeline);
