@@ -32,8 +32,9 @@ const listNjslaScores = catchAsync(async (req, res) => {
   console.log(req);
   const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS']);
   const filter2 = pick(req.body, ['scores']);
+  const filter3 = pick(req.body, ['subgroups']);
   console.log(filter);
-  const result = await apiService.listNjslaScores(filter, filter2);
+  const result = await apiService.listNjslaScores(filter, filter2, filter3);
   res.send(result);
 });
 
@@ -41,8 +42,9 @@ const listNjslaScoresAll = catchAsync(async (req, res) => {
   console.log(req);
   const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS']);
   const filter2 = pick(req.body, ['scores']);
+  const filter3 = pick(req.body, ['subgroups']);
   console.log(filter);
-  const result = await apiService.listNjslaScoresAll(filter, filter2);
+  const result = await apiService.listNjslaScoresAll(filter, filter2, filter3);
   res.send(result);
 });
 

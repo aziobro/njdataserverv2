@@ -264,7 +264,7 @@ const listScores = async (filter, filter2) => {
   return schoolscores;
 };
 
-const listNjslaScores = async (filter, filter2) => {
+const listNjslaScores = async (filter, filter2, filter3) => {
   const pipeline = [
     { $match: filter },
     {
@@ -278,8 +278,13 @@ const listNjslaScores = async (filter, filter2) => {
         scores: {
           $filter: {
             input: '$scores',
-            as: 'score',
-            cond: { $in: ['$$score.k', filter2.scores] },
+            as: 'score', //{ $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+            cond: {
+              $and: [
+                { $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+                { $regexMatch: { input: '$$score.k', regex: filter3.subgroups } },
+              ],
+            },
           },
         },
       },
@@ -354,6 +359,7 @@ const listNjslaScores = async (filter, filter2) => {
         Level4: '$scores.sd.L4Percent',
         Level5: '$scores.sd.L5Percent',
         test: '$scores.k',
+        year: '$scores.y',
         scoreText: 1,
         scoreText12: 1,
         DistrictName: 1,
@@ -362,7 +368,7 @@ const listNjslaScores = async (filter, filter2) => {
     },
     {
       $group: {
-        _id: { year: '$score-year', test: '$test' },
+        _id: '$score-year', //, test: '$test'
         x: { $push: '$x' },
         L4L5: { $push: '$L4L5' },
         L1L2: { $push: '$L1L2' },
@@ -384,6 +390,7 @@ const listNjslaScores = async (filter, filter2) => {
         Level3: { $push: '$Level3' },
         Level4: { $push: '$Level4' },
         Level5: { $push: '$Level5' },
+        year: { $push: '$year' },
         DistrictName: { $push: '$DistrictName' },
         SchoolName: { $push: '$SchoolName' },
       },
@@ -395,7 +402,7 @@ const listNjslaScores = async (filter, filter2) => {
   return schoolscores;
 };
 
-const listNjslaScoresAll = async (filter, filter2) => {
+const listNjslaScoresAll = async (filter, filter2, filter3) => {
   const pipeline = [
     { $match: filter },
     {
@@ -409,8 +416,13 @@ const listNjslaScoresAll = async (filter, filter2) => {
         scores: {
           $filter: {
             input: '$scores',
-            as: 'score',
-            cond: { $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+            as: 'score', //{ $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+            cond: {
+              $and: [
+                { $regexMatch: { input: '$$score.k', regex: filter2.scores } },
+                { $regexMatch: { input: '$$score.k', regex: filter3.subgroups } },
+              ],
+            },
           },
         },
       },
@@ -427,6 +439,43 @@ const listNjslaScoresAll = async (filter, filter2) => {
                 '$$scores',
                 { L4L5Sum: { $round: [{ $sum: ['$$scores.sd.L4Percent', '$$scores.sd.L5Percent'] }, 1] } },
                 { L1L2Sum: { $round: [{ $sum: ['$$scores.sd.L1Percent', '$$scores.sd.L2Percent'] }, 1] } },
+                { L45: { $round: [{ $sum: ['$$scores.sd.L4Percent', '$$scores.sd.L5Percent'] }, 1] } },
+                {
+                  L345: {
+                    $round: [{ $sum: ['$$scores.sd.L3Percent', '$$scores.sd.L4Percent', '$$scores.sd.L5Percent'] }, 1],
+                  },
+                },
+                {
+                  L2345: {
+                    $round: [
+                      {
+                        $sum: [
+                          '$$scores.sd.L2Percent',
+                          '$$scores.sd.L3Percent',
+                          '$$scores.sd.L4Percent',
+                          '$$scores.sd.L5Percent',
+                        ],
+                      },
+                      1,
+                    ],
+                  },
+                },
+                {
+                  L12345: {
+                    $round: [
+                      {
+                        $sum: [
+                          '$$scores.sd.L1Percent',
+                          '$$scores.sd.L2Percent',
+                          '$$scores.sd.L3Percent',
+                          '$$scores.sd.L4Percent',
+                          '$$scores.sd.L5Percent',
+                        ],
+                      },
+                      1,
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -473,7 +522,8 @@ const listNjslaScoresAll = async (filter, filter2) => {
     {
       $project: {
         CDS: '$CDS',
-        'cds-year': { $concat: ['$CDS', '.', '$scores.k', '.', '$scores.y'] },
+        'cds-year': { $concat: ['$CDS', '$scores.y'] }, //'.', '$scores.k', '.',
+        'test-year': { $concat: ['$scores.k', ' - ', '$scores.y'] },
         L4L5: '$scores.L4L5Sum',
         L1L2: '$scores.L1L2Sum',
         text: { $concat: ['$DistrictName', ' / ', '$SchoolName'] },
@@ -485,16 +535,23 @@ const listNjslaScoresAll = async (filter, filter2) => {
         Level3: '$scores.sd.L3Percent',
         Level4: '$scores.sd.L4Percent',
         Level5: '$scores.sd.L5Percent',
+        year: '$scores.y',
         test: '$scores.k',
+        L5: '$scores.sd.L5Percent',
+        L45: '$scores.L45',
+        L345: '$scores.L345',
+        L2345: '$scores.L2345',
+        L12345: '$scores.L12345',
         scoreText: 1,
         scoreText12: 1,
         DistrictName: 1,
         SchoolName: 1,
       },
     },
+    { $sort: { avgL4L5: 1 } },
     {
       $group: {
-        _id: { test: '$test' },
+        _id: '$test-year',
         CDS: { $push: '$CDS' },
         'cds-year': { $push: '$cds-year' },
         L4L5: { $push: '$L4L5' },
@@ -518,11 +575,18 @@ const listNjslaScoresAll = async (filter, filter2) => {
         Level3: { $push: '$Level3' },
         Level4: { $push: '$Level4' },
         Level5: { $push: '$Level5' },
+        L5: { $push: '$L5' },
+        L45: { $push: '$L45' },
+        L345: { $push: '$L345' },
+        L2345: { $push: '$L2345' },
+        L12345: { $push: '$L12345' },
+        year: { $push: '$year' },
+        testName: { $push: '$test' },
         DistrictName: { $push: '$DistrictName' },
         SchoolName: { $push: '$SchoolName' },
       },
     },
-    { $sort: { _id: 1 } },
+    //{ $sort: { _id: 1 } },
   ];
   console.log(JSON.stringify(pipeline));
   const schoolscores = await SchoolDetails.aggregate(pipeline);
