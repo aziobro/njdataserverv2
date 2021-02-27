@@ -482,8 +482,8 @@ const listNjslaScoresAll = async (filter, filter2, filter3) => {
         },
       },
     },
-    // { $addFields: { avgL4L5Sum: { $round: [ { $avg: '$scores.L4L5Sum' }, 1] } } },
-    // { $addFields: { avgL1L2Sum: { $round: [ { $avg: '$scores.L1L2Sum' }, 1] } } },
+    { $addFields: { avgL4L5Sum: { $round: [{ $avg: '$scores.L4L5Sum' }, 1] } } },
+    { $addFields: { avgL1L2Sum: { $round: [{ $avg: '$scores.L1L2Sum' }, 1] } } },
     {
       $set: {
         scores: {
@@ -517,7 +517,7 @@ const listNjslaScoresAll = async (filter, filter2, filter3) => {
         },
       },
     },
-    // { $sort: { avgL4L5Sum: 1 } },
+    // { $sort: { L4L5Sum: 1 } },
     { $unwind: '$scores' },
     {
       $project: {
@@ -548,7 +548,7 @@ const listNjslaScoresAll = async (filter, filter2, filter3) => {
         SchoolName: 1,
       },
     },
-    { $sort: { avgL4L5: 1 } },
+    // { $sort: { test: 1, year: 1 } },
     {
       $group: {
         _id: '$test-year',
@@ -586,7 +586,7 @@ const listNjslaScoresAll = async (filter, filter2, filter3) => {
         SchoolName: { $push: '$SchoolName' },
       },
     },
-    //{ $sort: { _id: 1 } },
+    { $sort: { _id: 1 } },
   ];
   console.log(JSON.stringify(pipeline));
   const schoolscores = await SchoolDetails.aggregate(pipeline);
