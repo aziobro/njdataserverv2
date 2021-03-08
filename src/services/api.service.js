@@ -370,6 +370,7 @@ const listNjslaScores = async (filter, filter2, filter3) => {
       $group: {
         _id: '$score-year', //, test: '$test'
         x: { $push: '$x' },
+        test: { $push: '$test' },
         L4L5: { $push: '$L4L5' },
         L1L2: { $push: '$L1L2' },
         text: { $push: '$text' },
