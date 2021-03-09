@@ -43,8 +43,10 @@ const listNjslaScoresAll = catchAsync(async (req, res) => {
   const filter = pick(req.body, ['CountyCode', 'DistrictCode', 'CDS']);
   const filter2 = pick(req.body, ['scores']);
   const filter3 = pick(req.body, ['subgroups']);
+  const filterYears = pick(req.body, ['years']);
+
   console.log(filter);
-  const result = await apiService.listNjslaScoresAll(filter, filter2, filter3);
+  const result = await apiService.listNjslaScoresAll(filter, filter2, filter3,filterYears);
   res.send(result);
 });
 
