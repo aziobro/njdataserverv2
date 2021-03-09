@@ -536,6 +536,7 @@ const listNjslaScoresAll = async (filter, filter2, filter3, filterYears) => {
          L345 : {$avg: "$L345"},
          L45 : {$avg: "$L45"},
        }},
+       {$sort: {L45:1}},
        {$group:{
          _id: {Group:"$_id.scoresk"},
          "SchoolName": {$push:"$_id.SchoolName"},
